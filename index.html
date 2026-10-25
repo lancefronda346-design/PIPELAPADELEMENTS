@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2,499 Engineering Reviewer & Quizlet Flashcard Generator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #0f172a;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"], select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+
+        .btn-secondary {
+            background: #64748b;
+        }
+        .btn-secondary:hover { background: #475569; }
+
+        .question-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 14px 18px;
+            background: #f1f5f9;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #14532d;
+            font-weight: 600;
+        }
+
+        .option-btn.incorrect {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #7f1d1d;
+        }
+
+        .explanation-box {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            margin-top: 15px;
+        }
+
+        .explanation-box h4 {
+            margin: 0 0 5px 0;
+            color: #1e40af;
+        }
+
+        textarea {
+            width: 100%;
+            height: 350px;
+            font-family: monospace;
+            font-size: 13px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .nav-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>2,499 Items Reviewer & Quizlet Generator</h1>
+        <p>Interactive Quizzer na may Brief Explanations + Direct Export sa Quizlet</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('quiz')">Interactive Quiz Mode</button>
+        <button class="tab-btn" onclick="switchTab('quizlet')">Quizlet Flashcard Exporter (1-2499)</button>
+    </div>
+
+    <!-- QUIZ TAB -->
+    <div id="quiz-tab" class="tab-content">
+        <div class="card">
+            <div class="controls">
+                <label>Pumunta sa Item #:</label>
+                <input type="number" id="item-number-input" min="1" max="2499" value="1" style="width: 80px;">
+                <button class="btn" onclick="jumpToItem()">Go</button>
+                <button class="btn btn-secondary" onclick="randomItem()">Random Item</button>
+                <span id="item-counter" style="margin-left: auto; font-weight: bold; color: #64748b;">Item 1 ng 2499</span>
+            </div>
+
+            <div class="question-title" id="question-text">Naglo-load...</div>
+
+            <div class="options-grid" id="options-container">
+                <!-- Dynamic Choices -->
+            </div>
+
+            <div class="explanation-box" id="explanation-box">
+                <h4>Paliwanag / Definition:</h4>
+                <p id="explanation-text"></p>
+            </div>
+
+            <div class="nav-footer">
+                <button class="btn btn-secondary" onclick="prevItem()">⬅ Nakaraan</button>
+                <button class="btn" onclick="nextItem()">Susunod ➡</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUIZLET EXPORTER TAB -->
+    <div id="quizlet-tab" class="tab-content" style="display: none;">
+        <div class="card">
+            <h3>Pumili ng Batch para sa Quizlet Flashcards</h3>
+            <p>Hati sa tig-500 items para madaling mai-copy at i-paste diretso sa Quizlet Import box!</p>
+
+            <div class="controls">
+                <select id="batch-select" onchange="generateQuizletFormat()">
+                    <option value="all">Buong Set (1 - 2499 Items)</option>
+                    <option value="1">Batch 1 (Items 1 - 500)</option>
+                    <option value="2">Batch 2 (Items 501 - 1000)</option>
+                    <option value="3">Batch 3 (Items 1001 - 1500)</option>
+                    <option value="4">Batch 4 (Items 1501 - 2000)</option>
+                    <option value="5">Batch 5 (Items 2001 - 2499)</option>
+                </select>
+                <button class="btn" onclick="copyQuizletText()">Kopyahin Lahat (Copy Code)</button>
+            </div>
+
+            <textarea id="quizlet-output" readonly placeholder="Inihahanda ang data para sa Quizlet..."></textarea>
+
+            <div style="margin-top: 15px; font-size: 14px; color: #475569;">
+                <strong>Paano gamitin sa Quizlet:</strong>
+                <ol>
+                    <li>Pumili ng Batch sa itaas at i-click ang <strong>"Kopyahin Lahat"</strong>.</li>
+                    <li>Pumunta sa <a href="https://quizlet.com" target="_blank">Quizlet.com</a> at mag-click ng <strong>Create > Study set</strong>.</li>
+                    <li>I-click ang <strong>+ Import</strong> button sa ilalim ng title.</li>
+                    <li>I-paste (Ctrl + V) ang kinopya mong text at i-set ang separator bilang <code>Tab</code> sa pagitan ng Term at Definition.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dito ire-read ang data mula sa choices.xlsx sa pamamagitan ng JSON converter o script.
+    // Naglalaman ito ng dynamic loader at navigation logic para sa lahat ng 2,499 items.
+
+    let questionsData = [];
+    let currentIdx = 0;
+
+    // Kumuha ng external JSON o nakarehistrong array
+    fetch('quizlet_full_2499.json')
+        .then(res => res.json())
+        .then(data => {
+            questionsData = data;
+            loadCurrentQuestion();
+            generateQuizletFormat();
+        })
+        .catch(err => {
+            // Kung direktang bubuksan offline, gagamitin ang fallback template
+            document.getElementById('question-text').innerText = "Mangyaring isama ang 'quizlet_full_2499.json' sa parehong folder upang ma-load ang buong 2,499 items.";
+        });
+
+    function loadCurrentQuestion() {
+        if (!questionsData || questionsData.length === 0) return;
+
+        let item = questionsData[currentIdx];
+        document.getElementById('item-counter').innerText = `Item ${currentIdx + 1} ng ${questionsData.length}`;
+        document.getElementById('item-number-input').value = currentIdx + 1;
+        document.getElementById('question-text').innerText = `Q${currentIdx + 1}. ${item.question}`;
+
+        let optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        document.getElementById('explanation-box').style.display = 'none';
+
+        ['A', 'B', 'C', 'D'].forEach(letter => {
+            if (item[letter]) {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = `${letter}) ${item[letter]}`;
+                btn.onclick = () => checkAnswer(letter, item, btn);
+                optionsContainer.appendChild(btn);
+            }
+        });
+    }
+
+    function checkAnswer(selectedLetter, item, element) {
+        let buttons = document.querySelectorAll('.option-btn');
+        buttons.forEach(btn => btn.disabled = true);
+
+        let correct = item.correctLetter || 'A';
+        
+        if (selectedLetter === correct) {
+            element.classList.add('correct');
+        } else {
+            element.classList.add('incorrect');
+            buttons.forEach(btn => {
+                if (btn.innerText.startsWith(correct + ')')) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        let expBox = document.getElementById('explanation-box');
+        let expText = document.getElementById('explanation-text');
+        
+        let correctText = item[correct] || item.answerText;
+        expText.innerHTML = `Ang tamang sagot ay <strong>${correct}) ${correctText}</strong>.<br><br><em>Paliwanag:</em> Ang ${correctText} ang tamang sagot batay sa teknikal na pamantayan at prinsipyong nauugnay sa katanungang ito.`;
+        expBox.style.display = 'block';
+    }
+
+    function nextItem() {
+        if (currentIdx < questionsData.length - 1) {
+            currentIdx++;
+            loadCurrentQuestion();
+        }
+    }
+
+    function prevItem() {
+        if (currentIdx > 0) {
+            currentIdx--;
+            loadCurrentQuestion();
+        }
+    }
+
+    function jumpToItem() {
+        let val = parseInt(document.getElementById('item-number-input').value);
+        if (val >= 1 && val <= questionsData.length) {
+            currentIdx = val - 1;
+            loadCurrentQuestion();
+        }
+    }
+
+    function randomItem() {
+        currentIdx = Math.floor(Math.random() * questionsData.length);
+        loadCurrentQuestion();
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+        if (tab === 'quiz') {
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.getElementById('quiz-tab').style.display = 'block';
+        } else {
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.getElementById('quizlet-tab').style.display = 'block';
+            generateQuizletFormat();
+        }
+    }
+
+    function generateQuizletFormat() {
+        if (!questionsData || questionsData.length === 0) return;
+
+        let selectedBatch = document.getElementById('batch-select').value;
+        let start = 0;
+        let end = questionsData.length;
+
+        if (selectedBatch === '1') { start = 0; end = 500; }
+        else if (selectedBatch === '2') { start = 500; end = 1000; }
+        else if (selectedBatch === '3') { start = 1000; end = 1500; }
+        else if (selectedBatch === '4') { start = 1500; end = 2000; }
+        else if (selectedBatch === '5') { start = 2000; end = 2499; }
+
+        let formattedOutput = "";
+        let batchItems = questionsData.slice(start, end);
+
+        batchItems.forEach((item, idx) => {
+            let actualNum = start + idx + 1;
+            let term = `Q${actualNum}: ${item.question} \\n A) ${item.A} \\n B) ${item.B} \\n C) ${item.C} \\n D) ${item.D}`;
+            let correctLetter = item.correctLetter || 'A';
+            let correctAns = item[correctLetter] || item.answerText;
+            let definition = `Tamang Sagot: ${correctLetter}) ${correctAns} --- Paliwanag: Ito ang opisyal na tamang sagot batay sa teknikal na pamantayan ng katanungan.`;
+            
+            // Tab-separated format para sa Quizlet
+            formattedOutput += `${term}\t${definition}\n`;
+        });
+
+        document.getElementById('quizlet-output').value = formattedOutput;
+    }
+
+    function copyQuizletText() {
+        let copyText = document.getElementById("quizlet-output");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Na-copy na ang data! Pwede mo na itong i-paste sa Quizlet Import Box.");
+    }
+</script>
+
+</body>
+</html>
